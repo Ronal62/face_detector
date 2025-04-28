@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
@@ -8,6 +9,8 @@ import '../models/face_data.dart';
 import '../widgets/app_drawer.dart';
 
 class DetectorScreen extends StatefulWidget {
+  const DetectorScreen({super.key});
+
   @override
   _DetectorScreenState createState() => _DetectorScreenState();
 }
@@ -16,8 +19,10 @@ class _DetectorScreenState extends State<DetectorScreen> {
   CameraController? _cameraController;
   mlkit.FaceDetector? _faceDetector;
   bool _isInitialized = false;
-  bool _isProcessing = false;
-  String _result = '';
+  bool _isScanning = false;
+  bool _isFaceFound = false;
+  String _result = 'Scanning...';
+  Timer? _scanTimer;
 
   @override
   void initState() {
@@ -42,13 +47,44 @@ class _DetectorScreenState extends State<DetectorScreen> {
     setState(() {
       _isInitialized = true;
     });
+
+    _startScanning();
   }
 
   @override
   void dispose() {
+    _stopScanning();
     _cameraController?.dispose();
     _faceDetector?.close();
     super.dispose();
+  }
+
+  void _startScanning() {
+    if (_isScanning) return;
+
+    setState(() {
+      _isScanning = true;
+      _isFaceFound = false;
+      _result = 'Scanning...';
+    });
+
+    _scanTimer = Timer.periodic(Duration(seconds: 2), (timer) async {
+      if (!_isScanning) {
+        timer.cancel();
+        return;
+      }
+      await _scanAndMatchFace();
+    });
+  }
+
+  void _stopScanning() {
+    if (_scanTimer != null) {
+      _scanTimer!.cancel();
+      _scanTimer = null;
+    }
+    setState(() {
+      _isScanning = false;
+    });
   }
 
   Future<void> _scanAndMatchFace() async {
@@ -57,11 +93,6 @@ class _DetectorScreenState extends State<DetectorScreen> {
       return;
     }
 
-    setState(() {
-      _isProcessing = true;
-      _result = '';
-    });
-
     final picture = await _cameraController!.takePicture();
     final inputImage = mlkit.InputImage.fromFilePath(picture.path);
     final faces = await _faceDetector!.processImage(inputImage);
@@ -69,7 +100,6 @@ class _DetectorScreenState extends State<DetectorScreen> {
     if (faces.isEmpty) {
       setState(() {
         _result = "Tidak ada wajah terdeteksi!";
-        _isProcessing = false;
       });
       return;
     }
@@ -83,11 +113,10 @@ class _DetectorScreenState extends State<DetectorScreen> {
       final savedFaces = await _faceDetector!.processImage(savedImage);
 
       if (savedFaces.isNotEmpty) {
-        // Matching sederhana: asal dua gambar sama-sama ada wajah
         found = true;
         setState(() {
-          _result = "Halo, ${faceData.name}!";
-          _isProcessing = false;
+          _result = "Wajah Terdeteksi!";
+          _isFaceFound = true;
         });
         break;
       }
@@ -96,8 +125,9 @@ class _DetectorScreenState extends State<DetectorScreen> {
     if (!found) {
       setState(() {
         _result = "Wajah tidak dikenal!";
-        _isProcessing = false;
       });
+    } else {
+      _stopScanning();
     }
 
     // Hapus foto sementara
@@ -118,18 +148,17 @@ class _DetectorScreenState extends State<DetectorScreen> {
                     child: CameraPreview(_cameraController!),
                   ),
                   SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isProcessing ? null : _scanAndMatchFace,
-                    child:
-                        _isProcessing
-                            ? CircularProgressIndicator(color: Colors.white)
-                            : Text("Scan dan Cocokkan Wajah"),
-                  ),
-                  SizedBox(height: 16),
                   Text(
                     _result,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
                   ),
+                  SizedBox(height: 16),
+                  if (_isFaceFound)
+                    ElevatedButton(
+                      onPressed: _startScanning,
+                      child: Text("Rescan"),
+                    ),
                 ],
               )
               : Center(child: CircularProgressIndicator()),
