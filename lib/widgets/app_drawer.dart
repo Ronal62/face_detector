@@ -17,9 +17,9 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             accountName: Text("Welcome!", style: TextStyle(fontWeight: FontWeight.bold)),
-            accountEmail: Text("app@example.com"),
+            accountEmail: Text("ronald.23142@mhs.unesa.ac.id"),
             currentAccountPicture: CircleAvatar(
-              backgroundImage: AssetImage('assets/avatar.png'), // Ganti dengan path gambar profil
+              backgroundImage: AssetImage('assets/avatar.jpg'), // Ganti dengan path gambar profil
             ),
           ),
           Expanded(

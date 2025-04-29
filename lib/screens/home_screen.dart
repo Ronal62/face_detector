@@ -70,8 +70,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton(
         onPressed: _refreshCount,
-        child: const Icon(Icons.refresh),
         tooltip: 'Perbarui Jumlah Wajah',
+        child: const Icon(Icons.refresh),
       ),
       body: Center(
         child: Padding(
