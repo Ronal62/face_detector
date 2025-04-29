@@ -4,6 +4,8 @@ import '../models/face_data.dart';
 import '../widgets/app_drawer.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }

@@ -16,6 +16,8 @@ void main() async {
 }
 
 class FaceDetectorApp extends StatelessWidget {
+  const FaceDetectorApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

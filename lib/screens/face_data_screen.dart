@@ -5,6 +5,8 @@ import '../models/face_data.dart';
 import '../widgets/app_drawer.dart';
 
 class FaceDataScreen extends StatefulWidget {
+  const FaceDataScreen({super.key});
+
   @override
   _FaceDataScreenState createState() => _FaceDataScreenState();
 }
